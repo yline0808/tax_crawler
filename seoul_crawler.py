@@ -2,6 +2,7 @@ import time
 import selenium
 import pymysql
 import simplejson
+import sys
 
 # from pyvirtualdisplay import Display
 from selenium import webdriver
@@ -12,7 +13,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 
 
-def seoul_crawler():
+def seoul_crawler(year, month):
+    print(year, month)
+
     json_data = open('./config.json').read()
     json = simplejson.loads(json_data)
 
@@ -74,30 +77,75 @@ def seoul_crawler():
         time.sleep(3)
         
         totalUrl = []
+        dept1NameList = []
+        dept2NameList = []
+        dept3NameList = []
+        dept4NameList = []
+
+        # check year and month
+        isYearExist = False
+        isMonthExixt = False
+
+        yearElements = driver.find_elements(By.CSS_SELECTOR, 'select#select-year > option')
+        for yearElement in yearElements:
+            if year == int(yearElement.get_attribute('textContent')):
+                print(year)
+
         # ==========department1 crawler===========
-        selectWidgetElementList = driver.find_elements(By.CSS_SELECTOR, 'div.views-exposed-widgets.clearfix > select.select-dept');
+        dept1Element = driver.find_element(By.CSS_SELECTOR, 'select#dept1')
 
-        for selDept in selectWidgetElementList:
-            if selDept.get_attribute('disabled') == None:
-                break
+        for dept1Option in dept1Element.find_elements(By.CSS_SELECTOR, 'option'):
+            dept1NameList.append(dept1Option.get_attribute('textContent'))
+            dept1Option.click()
+            time.sleep(2)
+            print('<1>', dept1Option.get_attribute('textContent'))
+
+            isDept2Disabled = driver.find_element(By.CSS_SELECTOR, 'select#dept2').get_attribute('disabled')
+
+            # driver.find_element(By.CSS_SELECTOR, 'select#select-year > option[value="{}"]'.format(year)).click()
 
 
-        dept1ElementList = driver.find_elements(By.CSS_SELECTOR, '#dept1 > option')
+            if isDept2Disabled == True:
+                driver.find_element(By.CSS_SELECTOR, 'select#select-year > option[value="{}"]'.format(year)).click()
 
+            dept2Element = driver.find_element(By.CSS_SELECTOR, 'select#dept2')
 
+            for dept2Option in dept2Element.find_elements(By.CSS_SELECTOR, 'option'):
+                dept2NameList.append(dept2Option.get_attribute('textContent'))
+                dept2Option.click()
+                time.sleep(2)
+                print('<2>', dept2Option.get_attribute('textContent'))
 
-        dept1TxtList = []
-        
-        for dept1Element in dept1ElementList:
-            dept1List.append(dept1Element.get_attribute('textContent'))
-            
-        
-        for i in dept1List:
-            print(i)
+                isDept3Disabled = driver.find_element(By.CSS_SELECTOR, 'select#dept3').get_attribute('disabled')
+
+                if isDept3Disabled == True: break
+
+                dept3Element = driver.find_element(By.CSS_SELECTOR, 'select#dept3')
+
+                for dept3Option in dept3Element.find_elements(By.CSS_SELECTOR, 'option'):
+                    dept3NameList.append(dept3Option.get_attribute('textContent'))
+                    dept3Option.click()
+                    time.sleep(2)
+                    print('<3>', dept3Option.get_attribute('textContent'))
+
+                    isDept4Disabled = driver.find_element(By.CSS_SELECTOR, 'select#dept4').get_attribute('disabled')
+
+                    if isDept4Disabled == True: break
+
+                    dept4Element = driver.find_element(By.CSS_SELECTOR, 'select#dept4')
+
+                    for dept4Option in dept4Element.find_elements(By.CSS_SELECTOR, 'option'):
+                        dept4NameList.append(dept4Option.get_attribute('textContent'))
+                        dept4Option.click()
+                        time.sleep(2)
+
+                        print('<4>', dept4Option.get_attribute('textContent'))
 
     except Exception as e:
         print("==========error=========")
         print(e)
 
 
-seoul_crawler()
+
+# seoul_crawler(sys.argv[1], sys.argv[2])
+seoul_crawler(2019, 7)

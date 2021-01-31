@@ -1,0 +1,59 @@
+//서울 크롤링 데이터 저장
+CREATE TABLE `seoul` (
+   `id` BIGINT NOT NULL AUTO_INCREMENT,
+   `department1Id` BIGINT NULL DEFAULT NULL,
+   `department2Id` BIGINT NULL DEFAULT NULL,
+   `department3Id` BIGINT NULL DEFAULT NULL,
+   `department4Id` BIGINT NULL DEFAULT NULL,
+   `purpose` VARCHAR(50) NULL DEFAULT NULL,
+   `department` VARCHAR(50) NULL DEFAULT NULL,
+   `usedAt` DATE NULL DEFAULT NULL,
+   `place` VARCHAR(200) NULL DEFAULT NULL,
+   `usePurpose` VARCHAR(200) NULL DEFAULT NULL,
+   `price` INT NULL DEFAULT NULL,
+   `user` VARCHAR(100) NULL DEFAULT NULL,
+   `paymentMethod` VARCHAR(100) NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+//지역관련 db (ex:서울시, 고양시, ....)
+CREATE TABLE `department0` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+//여기서 부터 부서 세분화1~4
+CREATE TABLE `department1` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   `department0_id` INT NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+CREATE TABLE `department2` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   `department1_id` INT NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+CREATE TABLE `department3` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   `department2_id` INT NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+CREATE TABLE `department4` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   `department3_id` INT NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
