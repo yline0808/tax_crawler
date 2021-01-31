@@ -1,6 +1,7 @@
 import time
 import selenium
 import pymysql
+import simplejson
 
 # from pyvirtualdisplay import Display
 from selenium import webdriver
@@ -9,14 +10,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-# GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'trevor125';
+
 
 def seoul_crawler():
-    host = '192.168.219.108'
-    port = 3306
-    user = 'root'
-    password = 'trevor125'
-    db = 'crawler'
+    json_data = open('./config.json').read()
+    json = simplejson.loads(json_data)
+
+    host = json["database"]["host"]
+    port = json["database"]["port"]
+    user = json["database"]["user"]
+    password = json["database"]["password"]
+    db = json["database"]["db"]
     
     conn = pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
     cursor = conn.cursor()
@@ -64,21 +68,29 @@ def seoul_crawler():
 
         crawling_date = int(time.time())
 
-        url = 'http://opengov.seoul.go.kr/expense'
+        url = json["url"]["seoul"]
         driver.get(url)
 
         time.sleep(3)
         
         totalUrl = []
         # ==========department1 crawler===========
+        selectWidgetElementList = driver.find_elements(By.CSS_SELECTOR, 'div.views-exposed-widgets.clearfix > select.select-dept');
+
+        for selDept in selectWidgetElementList:
+            if selDept.get_attribute('disabled') == None:
+                break
+
+
         dept1ElementList = driver.find_elements(By.CSS_SELECTOR, '#dept1 > option')
 
-        dept1List = []
+
+
+        dept1TxtList = []
         
         for dept1Element in dept1ElementList:
-            dept1 = dept1Element.get_attribute('selected')
-            dept1List.append(dept1)
-            print(dept1)
+            dept1List.append(dept1Element.get_attribute('textContent'))
+            
         
         for i in dept1List:
             print(i)
