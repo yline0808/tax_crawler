@@ -5,6 +5,7 @@ CREATE TABLE `seoul` (
    `department2Id` BIGINT NULL DEFAULT NULL,
    `department3Id` BIGINT NULL DEFAULT NULL,
    `department4Id` BIGINT NULL DEFAULT NULL,
+   `department5Id` BIGINT NULL DEFAULT NULL,
    `purpose` VARCHAR(50) NULL DEFAULT NULL,
    `department` VARCHAR(50) NULL DEFAULT NULL,
    `usedAt` DATE NULL DEFAULT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE `seoul` (
    `price` INT NULL DEFAULT NULL,
    `user` VARCHAR(100) NULL DEFAULT NULL,
    `paymentMethod` VARCHAR(100) NULL DEFAULT NULL,
+   `crawlDate` DATE NULL DEFAULT NULL,
    PRIMARY KEY (`id`)
 )
 COLLATE='utf8mb4_0900_ai_ci';
@@ -54,6 +56,14 @@ CREATE TABLE `department4` (
    `id` INT NOT NULL AUTO_INCREMENT,
    `name` VARCHAR(100) NULL DEFAULT NULL,
    `department3_id` INT NULL DEFAULT NULL,
+   PRIMARY KEY (`id`)
+)
+COLLATE='utf8mb4_0900_ai_ci';
+
+CREATE TABLE `department5` (
+   `id` INT NOT NULL AUTO_INCREMENT,
+   `name` VARCHAR(100) NULL DEFAULT NULL,
+   `department4_id` INT NULL DEFAULT NULL,
    PRIMARY KEY (`id`)
 )
 COLLATE='utf8mb4_0900_ai_ci';
