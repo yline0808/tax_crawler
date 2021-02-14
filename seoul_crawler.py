@@ -89,6 +89,9 @@ def seoul_crawler(year, month):
         # select department
         selectDept(conn, driver, year, month)
 
+        conn.close()
+        sys.exit()
+
     except Exception as e:
         print("==========error=========")
         print(e)
@@ -125,167 +128,225 @@ def clickDate(driver, year, month):
 # crawling
 def selectDept(conn, driver, year, month):
     totalUrl = []
-    dept1NameList = []
-    dept2NameList = []
-    dept3NameList = []
-    dept4NameList = []
-    dept5NameList = []
+    dept0Name = 'seoul'
 
+    dept0Info = saveTopDepartment(conn, dept0Name)
+        
+    time.sleep(2)
     dept1Element = driver.find_element(By.CSS_SELECTOR, 'select#dept1')
+    time.sleep(2)
 
     # classification step 1
     for dept1Option in dept1Element.find_elements(By.CSS_SELECTOR, 'option'):
-        dept1NameList.append(dept1Option.get_attribute('textContent'))
+
         dept1Option.click()
+        dept1Info = saveDepartment(conn, dept1Option.get_attribute('textContent'), dept0Info[0], 'department1')
         time.sleep(2)
         print('<1>', dept1Option.get_attribute('textContent'))
 
         dept2Element = driver.find_element(By.CSS_SELECTOR, 'select#dept2')
+        time.sleep(2)
 
         if dept2Element.get_attribute('disabled') == 'true':
             deptList = [
-                dept1Option.get_attribute('textContent'),
+                dept1Info[0],
                 None,
                 None,
                 None,
                 None
             ]
             clickDate(driver, year, month)
-            crawling_table(conn, driver, deptList)
+            save_table(conn, driver, deptList)
+            continue
+            
 
         # classification step 2
         for dept2Option in dept2Element.find_elements(By.CSS_SELECTOR, 'option'):
-            dept2NameList.append(dept2Option.get_attribute('textContent'))
             dept2Option.click()
             time.sleep(2)
+            dept2Info = saveDepartment(conn, dept2Option.get_attribute('textContent'), dept1Info[0], 'department2')
             print('<2>', dept2Option.get_attribute('textContent'))
 
             dept3Element = driver.find_element(By.CSS_SELECTOR, 'select#dept3')
+            time.sleep(2)
 
             if dept3Element.get_attribute('disabled') == 'true':
                 deptList = [
-                    dept1Option.get_attribute('textContent'),
-                    dept2Option.get_attribute('textContent'),
+                    dept1Info[0],
+                    dept2Info[0],
                     None,
                     None,
-                    None
+                    None,
                 ]
-                clickDate(driver, year, month)
-                crawling_table(conn, driver, deptList)
+                dateElement = driver.find_element(By.XPATH, '//*[@id="form-expense-list"]/div/div/div[2]')
+                print(dateElement)
+                clickDate(dateElement, year, month)
+                # save_table(conn, driver, deptList)
+                continue
 
             # classification step 3
             for dept3Option in dept3Element.find_elements(By.CSS_SELECTOR, 'option'):
-                dept3NameList.append(dept3Option.get_attribute('textContent'))
                 dept3Option.click()
                 time.sleep(2)
+                dept3Info = saveDepartment(conn, dept3Option.get_attribute('textContent'), dept2Info[0], 'department3')
                 print('<3>', dept3Option.get_attribute('textContent'))
 
                 dept4Element = driver.find_element(By.CSS_SELECTOR, 'select#dept4')
+                time.sleep(2)
 
                 if dept4Element.get_attribute('disabled') == 'true': 
                     deptList = [
-                        dept1Option.get_attribute('textContent'),
-                        dept2Option.get_attribute('textContent'),
-                        dept3Option.get_attribute('textContent'),
+                        dept1Info[0],
+                        dept2Info[0],
+                        dept3Info[0],
                         None,
-                        None
+                        None,
                     ]
                     clickDate(driver, year, month)
-                    crawling_table(conn, driver, deptList)
+                    save_table(conn, driver, deptList)
+                    continue
                     
                 # classification step 4
                 for dept4Option in dept4Element.find_elements(By.CSS_SELECTOR, 'option'):
-                    dept4NameList.append(dept4Option.get_attribute('textContent'))
                     dept4Option.click()
                     time.sleep(2)
+                    dept4Info = saveDepartment(conn, dept4Option.get_attribute('textContent'), dept3Info[0], 'department4')
                     print('<4>', dept4Option.get_attribute('textContent'))
 
                     dept5Element = driver.find_element(By.CSS_SELECTOR, 'select#dept5')
+                    time.sleep(2)
 
                     if dept5Element.get_attribute('disabled') == 'true':
                         deptList = [
-                            dept1Option.get_attribute('textContent'),
-                            dept2Option.get_attribute('textContent'),
-                            dept3Option.get_attribute('textContent'),
-                            dept4Option.get_attribute('textContent'),
-                            None
+                            dept1Info[0],
+                            dept2Info[0],
+                            dept3Info[0],
+                            dept4Info[0],
+                            None,
                         ]
                         clickDate(dirver, year, month)
-                        crawling_table(conn, driver, deptList)
+                        save_table(conn, driver, deptList)
+                        continue
 
                     # classification step 5
                     for dept5Option in dept5Element.find_elements(By.CSS_SELECTOR, 'option'):
-                        dept5NameList.append(dept5Option.get_attribute('textContent'))
                         dept5Option.click()
                         time.sleep(2)
+                        dept5Info = saveDepartment(conn, dept5Option.get_attribute('textContent'), dept4Info[0], 'department5')
                         print('<5>', dept5Option.get_attribute('textContent'))
 
                         deptList = [
-                            dept1Option.get_attribute('textContent'),
-                            dept2Option.get_attribute('textContent'),
-                            dept3Option.get_attribute('textContent'),
-                            dept4Option.get_attribute('textContent'),
-                            dept5Option.get_attribute('textContent'),
+                            dept1Info[0],
+                            dept2Info[0],
+                            dept3Info[0],
+                            dept4Info[0],
+                            dept5Info[0],
                         ]
                         clickDate(driver, year, month)
-                        crawling_table(conn, driver, deptList)
+                        save_table(conn, driver, deptList)
+                        continue
 
 
-def crawling_table(conn, driver, deptList):
+def saveTopDepartment(conn, name):
+    curs = conn.cursor()
+
+    getDept0Info = checkTopDepartment(conn, name)
+    
+    if getDept0Info:
+        return getDept0Info
+
+    insertQuery = 'insert into department0 (name) values(%s)'
+    values = (name)
+    curs.execute(insertQuery, values)
+    conn.commit()
+
+    getDept0Info = checkTopDepartment(conn, name)
+
+    return getDept0Info
+
+
+def checkTopDepartment(conn, name):
+    curs = conn.cursor()
+
+    selectQuery = 'select * from department0 where name="{}"'.format(name)
+    curs.execute(selectQuery)
+    getDept0Info = curs.fetchone()
+    
+    return getDept0Info
+
+
+def saveDepartment(conn, name, parentId, tableName):
+    curs = conn.cursor()
+
+    getDeptInfo = checkDepartment(conn, name, parentId, tableName)
+
+    if getDeptInfo:
+        return getDeptInfo
+
+    insertQuery = 'insert into {} (name, parentDeptId) values(%s, %s)'.format(tableName)
+    values = (name, parentId)
+    curs.execute(insertQuery, values)
+    conn.commit()
+
+    getDeptInfo = checkDepartment(conn, name, parentId, tableName)
+
+    return getDeptInfo
+
+def checkDepartment(conn, name, parentId, tableName):
+    curs = conn.cursor()
+
+    selectQuery = 'select * from {} where name="{}" and parentDeptId={}'.format(tableName, name, parentId)
+    curs.execute(selectQuery)
+    getDeptInfo = curs.fetchone()
+
+    return getDeptInfo
+
+
+def save_table(conn, driver, deptList):
     tableRows = driver.find_elements(By.CSS_SELECTOR, 'div#mCSB_1_container > table > tbody > tr')
 
     for tableRow in tableRows:
-        # rowData = deptList.copy()
-        rowData = [None, None, None, None, None]
+        rowData = deptList.copy()
 
         for tableItem in tableRow.find_elements(By.CSS_SELECTOR, 'td'):
             rowData.append(tableItem.get_attribute('textContent').strip())
-        
+
+        if len(rowData) == 6:
+            print("해당 월은 사용 내용 없음")
+            break
+
         rowData.append(datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
 
         data = {
-            "dept1Id": None,
-            "dept2Id": None,
-            "dept3Id": None,
-            "dept4Id": None,
-            "dept5Id": None,
-            "purpose": rowData[5],
+            "dept1Id": rowData[0],
+            "dept2Id": rowData[1],
+            "dept3Id": rowData[2],
+            "dept4Id": rowData[3],
+            "dept5Id": rowData[4],
             "department": rowData[6],
-            "usedAt": rowData[7],
+            "usedAt": rowData[7].replace('-','/')+':00',
             "place": rowData[8],
             "usePurpose": rowData[9],
-            "price": rowData[10],
+            "price": int(rowData[10].replace(',','')),
             "user": rowData[11],
             "paymentMethod": rowData[12],
             "crawlDate": rowData[13],
         }
-
-        print(data)
-        insertTableDB(conn, data, rowData[:5])
-        
-    sys.exit()
+        insertTableDB(conn, data)
 
 
-def insertTableDB(conn, data, deptList):
-    # query = 'insert into seoul (department1Id, department2Id, department3Id, department4Id, department5Id,'\
-    #         'purpose, department, usedAt, place, usePurpose, price, user, paymentMethod, crawlDate)'\
-    #         'values(`{}`, `{}`, `{}`, `{}`, `{}`, %s, %s, %s, %s, %s, %s, %s, %s, %s)'.format(*list(map(lambda x: x if x else "NULL", deptList)))
-    # values = (data['dept1Id'], data['dept2Id'], data['dept3Id'], data['dept4Id'], data['dept5Id'], 
-    #         data['purpose'], data['department'], data['usedAt'], data['place'], data['usePurpose'], 
-    #         data['price'], data['user'], data['paymentMethod'], data['crawlDate'])
-
-    query = 'insert into seoul (purpose, department, usedAt, place, usePurpose, price, user, paymentMethod, crawlDate)'\
-            'values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
-    values = (data['purpose'], data['department'], data['usedAt'], data['place'], data['usePurpose'], 
+def insertTableDB(conn, data):
+    query = 'insert into seoul (department1Id, department2Id, department3Id, department4Id, department5Id,'\
+            'department, usedAt, place, usePurpose, price, user, paymentMethod, crawlDate)'\
+            'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+    values = (data['dept1Id'], data['dept2Id'], data['dept3Id'], data['dept4Id'], data['dept5Id'], 
+            data['department'], data['usedAt'], data['place'], data['usePurpose'], 
             data['price'], data['user'], data['paymentMethod'], data['crawlDate'])
 
     curs = conn.cursor()
     curs.execute(query, values)
     conn.commit()
 
-
-# def insertDepartmentDB(parent_id=None, name):
-#     print("")
 
 # seoul_crawler(sys.argv[1], sys.argv[2])
 seoul_crawler(2019, 6)
