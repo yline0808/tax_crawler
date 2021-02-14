@@ -86,8 +86,16 @@ def seoul_crawler(year, month):
             print('year or month is not exist')
             sys.exit()
 
-        # select department
-        selectDept(conn, driver, year, month)
+        # department
+        totalDepartmentInfo = selectDept(conn, driver)
+        print(len(totalDepartmentInfo))
+
+        # totalDepartmentInfo = [
+        #     [(1, '서울시본청', 1), (1, '서울시본청', 1), None, None, None],
+        #     [(1, '서울시본청', 1), (2, '감사위원회', 1), (2, '감사담당관', 2), None, None]
+        # ]
+        # table
+        crawlingTable(totalDepartmentInfo, year, month, driver, conn)
 
         conn.close()
         sys.exit()
@@ -95,6 +103,25 @@ def seoul_crawler(year, month):
     except Exception as e:
         print("==========error=========")
         print(e)
+
+
+def crawlingTable(totalDepartmentInfo, year, month, driver, conn):
+    for departmentsInfo in totalDepartmentInfo:
+        print(departmentsInfo)
+        deptList=[]
+        for idx, departmentInfo in enumerate(departmentsInfo):
+            if not departmentInfo:
+                deptList.append(None)
+                continue
+
+            deptList.append(departmentInfo[0])
+            optionStr = '//*[@id="dept{}"]/option[text()="{}"]'.format(idx+1, departmentInfo[1])
+
+            driver.find_element(By.XPATH, optionStr).click()
+            time.sleep(1)
+        
+        clickDate(driver, year, month)
+        saveTable(conn, driver, deptList)
 
 
 # check year and month
@@ -126,126 +153,121 @@ def clickDate(driver, year, month):
 
 
 # crawling
-def selectDept(conn, driver, year, month):
-    totalUrl = []
+def selectDept(conn, driver):
+    deptTimeSleep = 0.1
+    totalDepartmentInfo = []
     dept0Name = 'seoul'
 
     dept0Info = saveTopDepartment(conn, dept0Name)
         
-    time.sleep(2)
+    time.sleep(deptTimeSleep)
     dept1Element = driver.find_element(By.CSS_SELECTOR, 'select#dept1')
-    time.sleep(2)
+    time.sleep(deptTimeSleep)
 
     # classification step 1
     for dept1Option in dept1Element.find_elements(By.CSS_SELECTOR, 'option'):
 
         dept1Option.click()
         dept1Info = saveDepartment(conn, dept1Option.get_attribute('textContent'), dept0Info[0], 'department1')
-        time.sleep(2)
+        time.sleep(deptTimeSleep)
         print('<1>', dept1Option.get_attribute('textContent'))
 
         dept2Element = driver.find_element(By.CSS_SELECTOR, 'select#dept2')
-        time.sleep(2)
 
         if dept2Element.get_attribute('disabled') == 'true':
             deptList = [
-                dept1Info[0],
+                dept1Info,
                 None,
                 None,
                 None,
                 None
             ]
-            clickDate(driver, year, month)
-            save_table(conn, driver, deptList)
+            
+            totalDepartmentInfo.append(deptList)
             continue
             
 
         # classification step 2
         for dept2Option in dept2Element.find_elements(By.CSS_SELECTOR, 'option'):
             dept2Option.click()
-            time.sleep(2)
+            time.sleep(deptTimeSleep)
             dept2Info = saveDepartment(conn, dept2Option.get_attribute('textContent'), dept1Info[0], 'department2')
             print('<2>', dept2Option.get_attribute('textContent'))
 
             dept3Element = driver.find_element(By.CSS_SELECTOR, 'select#dept3')
-            time.sleep(2)
 
             if dept3Element.get_attribute('disabled') == 'true':
                 deptList = [
-                    dept1Info[0],
-                    dept2Info[0],
+                    dept1Info,
+                    dept2Info,
                     None,
                     None,
                     None,
                 ]
-                dateElement = driver.find_element(By.XPATH, '//*[@id="form-expense-list"]/div/div/div[2]')
-                print(dateElement)
-                clickDate(dateElement, year, month)
-                # save_table(conn, driver, deptList)
+                
+                totalDepartmentInfo.append(deptList)
                 continue
 
             # classification step 3
             for dept3Option in dept3Element.find_elements(By.CSS_SELECTOR, 'option'):
                 dept3Option.click()
-                time.sleep(2)
+                time.sleep(deptTimeSleep)
                 dept3Info = saveDepartment(conn, dept3Option.get_attribute('textContent'), dept2Info[0], 'department3')
                 print('<3>', dept3Option.get_attribute('textContent'))
 
                 dept4Element = driver.find_element(By.CSS_SELECTOR, 'select#dept4')
-                time.sleep(2)
 
                 if dept4Element.get_attribute('disabled') == 'true': 
                     deptList = [
-                        dept1Info[0],
-                        dept2Info[0],
-                        dept3Info[0],
+                        dept1Info,
+                        dept2Info,
+                        dept3Info,
                         None,
                         None,
                     ]
-                    clickDate(driver, year, month)
-                    save_table(conn, driver, deptList)
+                    
+                    totalDepartmentInfo.append(deptList)
                     continue
                     
                 # classification step 4
                 for dept4Option in dept4Element.find_elements(By.CSS_SELECTOR, 'option'):
                     dept4Option.click()
-                    time.sleep(2)
+                    time.sleep(deptTimeSleep)
                     dept4Info = saveDepartment(conn, dept4Option.get_attribute('textContent'), dept3Info[0], 'department4')
                     print('<4>', dept4Option.get_attribute('textContent'))
 
                     dept5Element = driver.find_element(By.CSS_SELECTOR, 'select#dept5')
-                    time.sleep(2)
 
                     if dept5Element.get_attribute('disabled') == 'true':
                         deptList = [
-                            dept1Info[0],
-                            dept2Info[0],
-                            dept3Info[0],
-                            dept4Info[0],
+                            dept1Info,
+                            dept2Info,
+                            dept3Info,
+                            dept4Info,
                             None,
                         ]
-                        clickDate(dirver, year, month)
-                        save_table(conn, driver, deptList)
+                        
+                        totalDepartmentInfo.append(deptList)
                         continue
 
                     # classification step 5
                     for dept5Option in dept5Element.find_elements(By.CSS_SELECTOR, 'option'):
                         dept5Option.click()
-                        time.sleep(2)
+                        time.sleep(deptTimeSleep)
                         dept5Info = saveDepartment(conn, dept5Option.get_attribute('textContent'), dept4Info[0], 'department5')
                         print('<5>', dept5Option.get_attribute('textContent'))
 
                         deptList = [
-                            dept1Info[0],
-                            dept2Info[0],
-                            dept3Info[0],
-                            dept4Info[0],
-                            dept5Info[0],
+                            dept1Info,
+                            dept2Info,
+                            dept3Info,
+                            dept4Info,
+                            dept5Info,
                         ]
-                        clickDate(driver, year, month)
-                        save_table(conn, driver, deptList)
+                        
+                        totalDepartmentInfo.append(deptList)
                         continue
-
+    return totalDepartmentInfo
 
 def saveTopDepartment(conn, name):
     curs = conn.cursor()
@@ -302,7 +324,7 @@ def checkDepartment(conn, name, parentId, tableName):
     return getDeptInfo
 
 
-def save_table(conn, driver, deptList):
+def saveTable(conn, driver, deptList):
     tableRows = driver.find_elements(By.CSS_SELECTOR, 'div#mCSB_1_container > table > tbody > tr')
 
     for tableRow in tableRows:
