@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from datetime import datetime
 
-
+errorList = []
 def seoul_crawler(year, month):
     print(year, month)
 
@@ -91,11 +91,16 @@ def seoul_crawler(year, month):
         print(len(totalDepartmentInfo))
 
         # totalDepartmentInfo = [
+        #     [(1, '서울시본청', 1), (31, '서울특별시장', 1), None, None, None],
         #     [(1, '서울시본청', 1), (1, '서울시본청', 1), None, None, None],
         #     [(1, '서울시본청', 1), (2, '감사위원회', 1), (2, '감사담당관', 2), None, None]
         # ]
         # table
         crawlingTable(totalDepartmentInfo, year, month, driver, conn)
+
+        print("==========error list=========")
+        for err in errorList:
+            print(err)
 
         conn.close()
         sys.exit()
@@ -118,7 +123,7 @@ def crawlingTable(totalDepartmentInfo, year, month, driver, conn):
             optionStr = '//*[@id="dept{}"]/option[text()="{}"]'.format(idx+1, departmentInfo[1])
 
             driver.find_element(By.XPATH, optionStr).click()
-            time.sleep(1)
+            time.sleep(1.5)
         
         clickDate(driver, year, month)
         saveTable(conn, driver, deptList)
@@ -325,36 +330,67 @@ def checkDepartment(conn, name, parentId, tableName):
 
 
 def saveTable(conn, driver, deptList):
-    tableRows = driver.find_elements(By.CSS_SELECTOR, 'div#mCSB_1_container > table > tbody > tr')
+    try:
+        tableRows = driver.find_elements(By.CSS_SELECTOR, 'div#mCSB_1_container > table > tbody > tr')
 
-    for tableRow in tableRows:
-        rowData = deptList.copy()
+        for tableRow in tableRows:
+            rowData = deptList.copy()
 
-        for tableItem in tableRow.find_elements(By.CSS_SELECTOR, 'td'):
-            rowData.append(tableItem.get_attribute('textContent').strip())
+            for tableItem in tableRow.find_elements(By.CSS_SELECTOR, 'td'):
+                rowData.append(tableItem.get_attribute('textContent').strip())
 
-        if len(rowData) == 6:
-            print("해당 월은 사용 내용 없음")
-            break
+            if len(rowData) == 6:
+                print("해당 월은 사용 내용 없음")
+                break
+            
+            if len(rowData) == 14:
+                rowData.append(datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
 
-        rowData.append(datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
+                data = {
+                    "dept1Id": rowData[0],
+                    "dept2Id": rowData[1],
+                    "dept3Id": rowData[2],
+                    "dept4Id": rowData[3],
+                    "dept5Id": rowData[4],
+                    "purpose": rowData[6],
+                    "department": rowData[7],
+                    "usedAt": rowData[8].replace('-','/')+':00',
+                    "place": rowData[9],
+                    "usePurpose": rowData[10],
+                    "price": int(rowData[11].replace(',','')),
+                    "user": rowData[12],
+                    "paymentMethod": rowData[13],
+                    "crawlDate": rowData[14],
+                }
 
-        data = {
-            "dept1Id": rowData[0],
-            "dept2Id": rowData[1],
-            "dept3Id": rowData[2],
-            "dept4Id": rowData[3],
-            "dept5Id": rowData[4],
-            "department": rowData[6],
-            "usedAt": rowData[7].replace('-','/')+':00',
-            "place": rowData[8],
-            "usePurpose": rowData[9],
-            "price": int(rowData[10].replace(',','')),
-            "user": rowData[11],
-            "paymentMethod": rowData[12],
-            "crawlDate": rowData[13],
-        }
-        insertTableDB(conn, data)
+                insertTableDB(conn, data)
+
+            if len(rowData) == 13:
+                rowData.append(datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
+
+                data = {
+                    "dept1Id": rowData[0],
+                    "dept2Id": rowData[1],
+                    "dept3Id": rowData[2],
+                    "dept4Id": rowData[3],
+                    "dept5Id": rowData[4],
+                    "purpose": None,
+                    "department": rowData[6],
+                    "usedAt": rowData[7].replace('-','/')+':00',
+                    "place": rowData[8],
+                    "usePurpose": rowData[9],
+                    "price": int(rowData[10].replace(',','')),
+                    "user": rowData[11],
+                    "paymentMethod": rowData[12],
+                    "crawlDate": rowData[13],
+                }
+
+                insertTableDB(conn, data)
+    
+    except Exception as e:
+        print("==========table error=========")
+        print(e)
+        errorList.append(deptList)
 
 
 def insertTableDB(conn, data):
