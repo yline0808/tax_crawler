@@ -25,6 +25,7 @@ def seoul_crawler(year, month):
     user = json["database"]["user"]
     password = json["database"]["password"]
     db = json["database"]["db"]
+    env = json["env"]
     
     conn = pymysql.connect(host=host, user=user, password=password, db=db, charset='utf8')
     print('db connection success!!!')
@@ -64,6 +65,11 @@ def seoul_crawler(year, month):
         options.add_argument(
             "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
+
+        if env == "server":
+            options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
 
         CHROME_PATH = json["driver"]["path"]
         # ===============================config===================================
