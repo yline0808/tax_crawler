@@ -65,7 +65,7 @@ def seoul_crawler(year, month):
             "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
 
-        CHROME_PATH = './driver/chromedriver.exe'
+        CHROME_PATH = json["driver"]["path"]
         # ===============================config===================================
 
 
