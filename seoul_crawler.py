@@ -33,8 +33,8 @@ def seoul_crawler(year, month):
     # cursor.execute(sql) 
     # conn.commit() 
     # conn.close() 
-
     sleep_time = 10
+
     start_time = time.ctime()
 
     try:
@@ -101,6 +101,7 @@ def seoul_crawler(year, month):
         #     [(1, '서울시본청', 1), (1, '서울시본청', 1), None, None, None],
         #     [(1, '서울시본청', 1), (2, '감사위원회', 1), (2, '감사담당관', 2), None, None]
         # ]
+
         # table
         crawlingTable(totalDepartmentInfo, year, month, driver, conn)
 
@@ -401,10 +402,10 @@ def saveTable(conn, driver, deptList):
 
 def insertTableDB(conn, data):
     query = 'insert into seoul (department1Id, department2Id, department3Id, department4Id, department5Id,'\
-            'department, usedAt, place, usePurpose, price, user, paymentMethod, crawlDate)'\
-            'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            'purpose, department, usedAt, place, usePurpose, price, user, paymentMethod, crawlDate)'\
+            'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     values = (data['dept1Id'], data['dept2Id'], data['dept3Id'], data['dept4Id'], data['dept5Id'], 
-            data['department'], data['usedAt'], data['place'], data['usePurpose'], 
+            data['purpose'], data['department'], data['usedAt'], data['place'], data['usePurpose'], 
             data['price'], data['user'], data['paymentMethod'], data['crawlDate'])
 
     curs = conn.cursor()
@@ -412,5 +413,4 @@ def insertTableDB(conn, data):
     conn.commit()
 
 
-# seoul_crawler(sys.argv[1], sys.argv[2])
-seoul_crawler(2019, 6)
+seoul_crawler(sys.argv[1], sys.argv[2])
