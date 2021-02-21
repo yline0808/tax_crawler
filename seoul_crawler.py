@@ -15,7 +15,10 @@ from datetime import datetime
 
 errorList = []
 def seoul_crawler(year, month):
-    print(year, month)
+    year=int(year)
+    month=int(month)
+
+    print('crawling {}, {}'.format(year, month))
 
     json_data = open('./config.json').read()
     json = simplejson.loads(json_data)
@@ -411,6 +414,5 @@ def insertTableDB(conn, data):
     curs = conn.cursor()
     curs.execute(query, values)
     conn.commit()
-
 
 seoul_crawler(sys.argv[1], sys.argv[2])

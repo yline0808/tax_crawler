@@ -2,3 +2,4 @@ config.json
 driver
 .vscode
 venv
+.DS_Store
